@@ -1,53 +1,49 @@
-# Define the class for web server setup
-class web_server {
-  package { 'nginx':
-    ensure => installed,
-  }
+# Puppet script to sets up your web servers for the deployment of web_static
 
-  service { 'nginx':
-    ensure  => running,
-    enable  => true,
-    require => Package['nginx'],
-  }
+# Install Nginx
+package { 'nginx':
+  ensure => installed,
+}
 
-  file { '/data/web_static/releases/test':
-    ensure => directory,
-    owner  => 'ubuntu',
-    group  => 'ubuntu',
-    mode   => '0755',
-  }
+# Create necessary directories
+file { ['/data', '/data/web_static', '/data/web_static/releases', '/data/web_static/shared', '/data/web_static/releases/test']:
+  ensure => directory,
+}
 
-  file { '/data/web_static/shared':
-    ensure => directory,
-    owner  => 'ubuntu',
-    group  => 'ubuntu',
-    mode   => '0755',
-  }
+# Create a fake HTML file
+file { '/data/web_static/releases/test/index.html':
+  ensure  => present,
+  content => '<html><head><title>Test Page</title></head><body>Test Content</body></html>',
+}
 
-  file { '/data/web_static/releases/test/index.html':
-    ensure  => present,
-    owner   => 'ubuntu',
-    group   => 'ubuntu',
-    mode    => '0644',
-    content => '<html>
-  <head>
-  </head>
-  <body>
-    Holberton School
-  </body>
-</html>',
-  }
+# Create a symbolic link
+file { '/data/web_static/current':
+  ensure => link,
+  target => '/data/web_static/releases/test',
+}
 
-  file { '/data/web_static/current':
-    ensure => link,
-    target => '/data/web_static/releases/test/',
-    owner  => 'ubuntu',
-    group  => 'ubuntu',
-  }
+# Set ownership recursively
+file { '/data':
+  ensure  => directory,
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  recurse => true,
+}
 
-  file { '/etc/nginx/sites-available/default':
-    ensure  => present,
-    content => template('web_server/nginx_config.erb'),
-    notify  => Service['nginx'],
-  }
+# Update Nginx configuration
+file { '/etc/nginx/sites-available/default':
+  ensure  => present,
+  content => "server {
+    location /hbnb_static {
+        alias /data/web_static/current/;
+    }
+}",
+  require => Package['nginx'],
+}
+
+# Restart Nginx after updating the configuration
+service { 'nginx':
+  ensure    => running,
+  enable    => true,
+  subscribe => File['/etc/nginx/sites-available/default'],
 }
