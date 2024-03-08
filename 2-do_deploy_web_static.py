@@ -80,5 +80,5 @@ def do_deploy(archive_path):
         run("ln -sf {} /data/web_static/current".format(release_path))
         return True
     except Exception as e:
-        print(e)
+        # print(e)
         return False
