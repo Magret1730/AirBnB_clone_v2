@@ -4,6 +4,7 @@ from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from models.base_model import BaseModel, Base
 from os import getenv
+from models.city import City
 
 
 class State(BaseModel, Base):
@@ -14,8 +15,8 @@ class State(BaseModel, Base):
         name = Column(String(128), nullable=False)
 
         cities = relationship("City", backref="state", cascade="all, delete")
-    else:
-        name = ""
+    """else:
+        name = """
 
     @property
     def cities(self):
@@ -24,7 +25,9 @@ class State(BaseModel, Base):
         state_id equal to the current State.id
         """
         from models import storage
+        matching_cities = []
         city_instances = storage.all(City)
-        matching_cities = [city for city in city_instances.values()
-                           if city.state_id == self.id]
+        for city in city_instances.values():
+            if city.state_id == self.id:
+                matching_cities.append(city)
         return matching_cities
