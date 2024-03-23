@@ -27,6 +27,9 @@ class State(BaseModel, Base):
         from models import storage
         matching_cities = []
         city_instances = storage.all(City)
+        # print("#########XXXXXXXXX")
+        # print("CITY INSTANCE", city_instances)
+        # print('\n\n\n')
         for city in city_instances.values():
             if city.state_id == self.id:
                 matching_cities.append(city)
