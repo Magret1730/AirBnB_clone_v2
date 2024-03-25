@@ -15,7 +15,6 @@ class User(BaseModel, Base):
         password = Column(String(128), nullable=False)
         first_name = Column(String(128))
         last_name = Column(String(128))
-
         # Define the relationship with the Place class and Review class
         places = relationship('Place', backref='user',
                               cascade='all, delete-orphan')

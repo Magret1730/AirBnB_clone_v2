@@ -22,7 +22,7 @@ class Place(BaseModel, Base):
     if getenv("HBNB_TYPE_STORAGE") == 'db':
         city_id = Column(String(60), ForeignKey('cities.id'), nullable=False)
         user_id = Column(String(60), ForeignKey('users.id'), nullable=False)
-        name = Column(String(120), nullable=False)
+        name = Column(String(128), nullable=False)
         description = Column(String(1024), nullable='True')
         number_rooms = Column(Integer, nullable=False, default=0)
         number_bathrooms = Column(Integer, nullable=False, default=0)
@@ -36,7 +36,7 @@ class Place(BaseModel, Base):
         amenities = relationship('Amenity', secondary='place_amenity',
                                  viewonly=False,
                                  back_populates='place_amenities')
-
+        amenity_ids = []
     else:
         city_id = ""
         user_id = ""
@@ -68,6 +68,7 @@ class Place(BaseModel, Base):
             on the attribute amenity_ids that contains all Amenity.id linked
             to the Place
             """
+            from models import storage
             return [storage.all("Amenity").get(amenity_id)
                     for amenity_id in self.amenity_ids]
 
@@ -78,5 +79,6 @@ class Place(BaseModel, Base):
             Amenity.id to the attribute amenity_ids. This method should
             accept only Amenity object, otherwise, do nothing.
             """
+            from models.amenity import Amenity
             if isinstance(obj, Amenity):
                 self.amenity_ids.append(obj.id)
